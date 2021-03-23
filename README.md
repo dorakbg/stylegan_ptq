@@ -16,7 +16,7 @@ One also need to download pretrained weights that can be accesed by this [link](
 
 Once you prepared data and download weights, experiments can be reproduced using notebooks provided in `notebooks/` directory:
 
-- Notebook `reproduce_fids_from_pretrained.ipynb` contains code for reproduction of FIDs given pre-quantized (pre-trained) models. **Important note:** one might run this notebook directly on Google Colab by this [link](https://colab.research.google.com/drive/1NwRsoXC6R8VIWnIHFohTN3hbGRVvmBnz?usp=sharing). Total running time on colab ~ 8 hours (however one can reproduce only part of experiments by editing loop parameters). 
+- Notebook `reproduce_fids_from_pretrained.ipynb` contains code for reproduction of FIDs given pre-quantized (pre-trained) models. **Important note:** one might run this notebook directly on Google Colab by this [link](https://colab.research.google.com/drive/1NwRsoXC6R8VIWnIHFohTN3hbGRVvmBnz?usp=sharing) (all data handling steps are included). Total running time on colab ~ 8 hours (however one can reproduce only part of experiments by editing loop parameters). 
 - Notebook `find_optimal_quantiles.ipynb` contains code for finding optimal quantiles for vanilla post-training quantization.
 - Notebook `adaround-brecq.ipynb` and `lsq-brecq.ipynb` contain code for running BRECQ algorightm with AdaRound and LSQ weights quantization respectively.
 
