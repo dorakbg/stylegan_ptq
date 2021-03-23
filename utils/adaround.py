@@ -1,4 +1,6 @@
-# type: ignore
+# This code is based on this implementation of adaptive rounding https://github.com/yhhhli/BRECQ/blob/main/quant/adaptive_rounding.py 
+# but modified to be compatible with PyTorch native quantization interface
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 import torch
 import torch.nn as nn
@@ -8,6 +10,15 @@ from torch.quantization.observer import _with_args
 class AdaRound(nn.Module):
     
     def __init__(self, observer, quant_min=-128, quant_max=127, scale=1., zero_point=0., **observer_kwargs):
+        """Adaround FakeQuantization module
+
+        Args:
+            observer (torch.quantization.observer): quantization obserever to initilalize quantizers
+            quant_min (int, optional): quantized values range (min). Defaults to -128.
+            quant_max (int, optional): quantized values range (max). Defaults to 127.
+            scale (float, optional):  Defaults to 1..
+            zero_point (float, optional):  Defaults to 0..
+        """
         super(AdaRound, self).__init__()
         assert quant_min < quant_max, 'quant_min must be strictly less than quant_max.'
         self.quant_min = quant_min
@@ -57,7 +68,6 @@ class AdaRound(nn.Module):
     @torch.no_grad()
     def enable_sigmoid_quant(self):
 
-        #assert hasattr(self, "X"), "Adaptive rounding is only possible after forward pass"
         if not hasattr(self, "X"):
             return
         

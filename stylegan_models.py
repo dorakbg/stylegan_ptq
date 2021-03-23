@@ -1,3 +1,5 @@
+#this code is a modified version of https://github.com/rosinality/style-based-gan-pytorch/blob/master/model.py to enable quantization simulation
+
 import torch
 
 from torch import nn

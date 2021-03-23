@@ -1,4 +1,5 @@
-# type: ignore
+#modified version of https://github.com/pytorch/pytorch/blob/382781221de4fd3c8035285ce803efb757b5c104/torch/quantization/_learnable_fake_quantize.py
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 import torch
 import torch.nn as nn
