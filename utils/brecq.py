@@ -1,3 +1,5 @@
+#BRECQ for StyleGAN generator implementation
+
 from utils.ptq_utils import *
 
 
@@ -152,6 +154,16 @@ def get_optimizers_and_schedulers(block, lr, lr_lsq, lq, iters, weight_mode):
 class SetupStoredTensors:
     
     def __init__(self, full_reference, full_quant, X, noise, batch_size=16, weighted=False):
+        """Setups input/output for blocks
+
+        Args:
+            full_reference (nn.Module): full precision model
+            full_quant (nn.Module): quantized model
+            X (torch.tensor): input to the first layer of models
+            noise (list of torch.tensors): noise for intermidiate layers
+            batch_size (int, optional): Defaults to 16.
+            weighted (bool, optional): COmpute and store gradients for weighted MSE of not?. Defaults to False.
+        """
         self.full_reference = full_reference
         self.full_quant = full_quant
         self.X = X
@@ -246,9 +258,30 @@ def get_batch(inp, out, batch_size, weights=None):
     return X_b, Y_b, W_b
 
 
-def optimize_sequentially(reference, quant, data_size, train_size=1024, weighted=True, device="cuda:0",
+def optimize_sequentially(reference, quant, data_size=1024, train_size=1024, weighted=True, device="cuda:0",
                           batch_size=16, num_blocks=None, lr=1e-4, lr_lsq=1e-4, quantized_inp=False,
                           iters=2000, lq=True, plot=True, setup_tensors=None, weight_mode="STE"):
+    """Otimizes block-wisely quant model to restore outputs of reference model
+
+    Args:
+        reference (nn.Module): full-precion model
+        quant (nn.Module): quantized model
+        data_size (int, optional): number of objects used in optimization (train + val)
+        train_size (int, optional): number of obects in training set. Defaults to 1024.
+        weighted (bool, optional): if True then squared gradient information is added to the loss fundtion (not recommendet) . Defaults to False.
+        device (str, optional): Defaults to "cuda:0".
+        batch_size (int, optional): Defaults to 16.
+        num_blocks (int optional): limits number of block for optimization. Defaults to None.
+        lr (float, optional): Learning rate for weights and biases. Defaults to 1e-4.
+        lr_lsq (float, optional): Learning rate for quantization paramters. Defaults to 1e-4.
+        quantized_inp (bool, optional): [description]. Defaults to False.
+        quantized_inp (bool, optional): Defines whether input to next layers comes from already quantized preceding blocks of from
+                                       full precision model. Defaults to False.
+        plot (bool, optional): Plot train and validation losses. Defaults to True.
+        lq (bool, optional): Learnable quantization?. Defaults to True.
+        setup_tensors (SetupStoredTensors, optional): Class to setup input/output . Defaults to None.
+        weight_mode (str, optional): STE or Adaround for quantization of weights. Defaults to "STE".
+    """
     
     val_size = data_size - train_size
     
@@ -344,6 +377,26 @@ def optimize_sequentially(reference, quant, data_size, train_size=1024, weighted
 def get_lbl_quant_model_stylegan(model_path, save_path="./q.pth", q_params=None, device="cuda:0",
                                  weighted=False, disable_observer=True, quantized_inp=False,
                                  plot=True, lq=True, lr=1e-4, lr_lsq=1e-4, iters=2000):
+    """Runs BRECQ algorightm layer by layer for StyleGAN generator
+
+    Args:
+        model_path (str): path to full precion model
+        save_path (str, optional): path to save the resulting model. Defaults to "./q.pth".
+        q_params (dict, optional): quantization parameters. Defaults to None.
+        device (str, optional): Defaults to "cuda:0".
+        weighted (bool, optional): if True then squared gradient information is added to the loss fundtion (not recommendet) . Defaults to False.
+        disable_observer (bool, optional): disable obserever at the end of the procedere. Defaults to True.
+        quantized_inp (bool, optional): Defines whether input to next layers comes from already quantized preceding blocks of from
+                                       full precision model. Defaults to False.
+        plot (bool, optional): Plot train and validation losses. Defaults to True.
+        lq (bool, optional): Learnable quantization?. Defaults to True.
+        lr (float, optional): Learning rate for weights and biases. Defaults to 1e-4.
+        lr_lsq (float, optional): Learning rate for quantization paramters. Defaults to 1e-4.
+        iters (int, optional): Number of iterations. Defaults to 2000.
+
+    Returns:
+        (nn.Module) quantized model
+    """
     
     weight_mode = "adaround" if q_params.get("adaround", False) else "STE"
     
